@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../widgets/glass_card.dart';
+import '../models/explanation_model.dart';
+import '../services/explanation_service.dart';
 
 class DetailScreen extends StatelessWidget {
   final Map<String, dynamic> appData;
@@ -72,51 +74,10 @@ class DetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 32),
 
-                // Gemini Explanation Block
-                GlassCard(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.auto_awesome, color: Colors.blueAccent[100]),
-                          const SizedBox(width: 12),
-                          Text(
-                            "Gemini 1.5 Flash Analysis",
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent[100],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        "Warning: Potential Bias detected. Model A heavily weighted the zip code proxy feature which historically correlates with demographic disparities, leading to an unfair bias flag. Model C removes this constraint and focuses on direct income parity, computing an Approval.",
-                        style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.white),
-                      ),
-                      const SizedBox(height: 32),
-                      ElevatedButton(
-                        onPressed: () {
-                          _showSuccessDialog(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 24),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        child: const Text(
-                          "Apply FairFlow Fix",
-                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
-                )
+                // Bias Explanation Section (generated via ExplanationService)
+                _buildExplanationSection(context),
+
+                const SizedBox(height: 32),
               ],
             ),
           );
@@ -124,6 +85,137 @@ class DetailScreen extends StatelessWidget {
       ),
     );
   }
+
+  /// Build the explanation section using generated bias analysis
+  Widget _buildExplanationSection(BuildContext context) {
+    final analysis = _createBiasAnalysisFromAppData();
+    final explanation = ExplanationService.generateExplanation(analysis);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.auto_awesome, color: Colors.blueAccent[100]),
+                  const SizedBox(width: 12),
+                  Text(
+                    "Fair Analysis",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blueAccent[100],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                explanation.mainExplanation,
+                style: const TextStyle(fontSize: 16, height: 1.6, color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+        if (explanation.attributionNarrative.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Feature Attribution",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueAccent,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ...explanation.attributionNarrative.map(
+                  (line) => Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      line,
+                      style: const TextStyle(fontSize: 14, color: Colors.white70),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+        if (explanation.sdgImpactNote != null) ...[
+          const SizedBox(height: 24),
+          GlassCard(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "UN SDG 10 Impact",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.greenAccent,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  explanation.sdgImpactNote!,
+                  style: const TextStyle(fontSize: 14, height: 1.5, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+        ],
+        const SizedBox(height: 24),
+        ElevatedButton(
+          onPressed: () {
+            _showSuccessDialog(context);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text(
+            "Apply FairFlow Fix",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+        )
+      ],
+    );
+  }
+
+  /// Convert appData to BiasAnalysis model
+  /// Maps UI data and hard-coded model outputs to explanation input
+  BiasAnalysis _createBiasAnalysisFromAppData() {
+    return BiasAnalysis(
+      biasScore: 0.68, // Mock: would come from backend
+      featureImportance: [
+        FeatureAttribution(featureName: 'Neighborhood factor (Zip Code)', importance: 0.35),
+        FeatureAttribution(featureName: 'Income threshold', importance: 0.28),
+        FeatureAttribution(featureName: 'Employment history gaps', importance: 0.19),
+        FeatureAttribution(featureName: 'Annual income', importance: 0.18),
+      ],
+      modelADecision: 'REJECT',
+      modelCDecision: 'APPROVE',
+      modelAConfidence: 0.87,
+      modelCConfidence: 0.91,
+      applicantName: appData['name'] ?? 'Applicant',
+      gender: appData['gender'],
+      race: appData['race'],
+    );
+  }
+
 
   Widget _buildModelCard(
     BuildContext context, {
