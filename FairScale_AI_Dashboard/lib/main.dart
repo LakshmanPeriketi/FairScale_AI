@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'screens/home_screen.dart';
-import 'screens/onboarding_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'screens/landing_screen.dart';
 
 Future<void> main() async {
-  await dotenv.load(fileName: ".env");
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: "assets/.env");
+  } catch (e) {
+    print("Dotenv load failed from assets/.env, trying root .env");
+    try {
+      await dotenv.load(fileName: ".env");
+    } catch (e2) {
+      print("All dotenv loads failed");
+    }
+  }
+
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "fake-api-key",
+      appId: "fake-app-id",
+      messagingSenderId: "fake-sender-id",
+      projectId: "demo-fairscale",
+    ),
+  );
+  
+  FirebaseFirestore.instance.useFirestoreEmulator('127.0.0.1', 9100);
+  // Point to the local Auth emulator to prevent 400 Bad Request errors with fake keys
+  // await FirebaseAuth.instance.useAuthEmulator('127.0.0.1', 9099); 
+  
   runApp(const FairScaleApp());
 }
 
@@ -15,37 +40,21 @@ class FairScaleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'FairScale AI Dashboard',
+      title: 'FairScale AI | Modern Fairness Engine',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.transparent, // Allow global background to show through
-        colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF4F46E5),         // Indigo primary
-          secondary: Color(0xFF10B981),       // Emerald secondary
-          background: Colors.transparent,     
-          surface: Colors.transparent,        
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: const Color(0xFFF1F5F9), // Light Slate
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF6366F1),
+          primary: const Color(0xFF6366F1),
+          secondary: const Color(0xFF0EA5E9),
+          surface: Colors.white,
         ),
-        textTheme: GoogleFonts.interTextTheme(Theme.of(context).primaryTextTheme),
+        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
       ),
-      builder: (context, child) {
-        return Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF0A0E17), // Deep dark space
-                Color(0xFF171336), // Deep Indigo
-                Color(0xFF2B0C36), // Deep Purple neon
-              ],
-            ),
-          ),
-          child: child,
-        );
-      },
-      home: const OnboardingScreen(),
+      home: const LandingScreen(),
     );
   }
 }

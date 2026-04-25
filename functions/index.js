@@ -7,33 +7,42 @@ exports.processApplication = functions.firestore
   .document("applications/{appId}")
   .onCreate(async (snap, context) => {
 
-    console.log("🔥 FUNCTION TRIGGERED");
-
+    console.log(`🔥 PROCESSING APP: ${snap.id}`);
     const data = snap.data();
 
-    // MODEL A (biased / original)
-    const modelA = data.income > 50000 ? "Approved" : "Rejected";
+    const biasScore = data.bias_score ? parseFloat(data.bias_score) : 0.0;
+    const fairDecision = data.fair_score !== undefined ? (data.fair_score === 1 ? "APPROVE" : "REJECT") : "PENDING";
+    const recommendation = data.ai_recommendation || "System scan complete.";
 
-    // MODEL B (bias detector)
-    const modelB_biasFlag = data.zipCode ? "Bias Suspected" : "No Bias";
+    const demographics = [];
+    if (data.Race) demographics.push(`Race (${data.Race})`);
+    if (data.Sex) demographics.push(`Gender (${data.Sex})`);
+    if (data.Country) demographics.push(`Nationality (${data.Country})`);
 
-    // MODEL C (fair model - ignores protected attributes)
-    const modelC = data.income > 25000 ? "Approved" : "Rejected";
+    const demographicStr = demographics.length > 0 ? demographics.join(", ") : "Universal Metrics";
 
-    // Gemini-style explanation (simulated)
-    const explanation = `Model A gave ${modelA}. 
-Model C suggests ${modelC} based on valid features like income. 
-Potential bias detected due to zipCode influence.`;
+    let explanation;
+    if (biasScore > 0.5) {
+      explanation = `**🚨 AI BIAS ALERT:**
+Our Interceptor detected a **${(biasScore * 100).toFixed(0)}% correlation** between the decision and protected demographics (${demographicStr}). 
 
-    await snap.ref.update({
-      modelA_decision: modelA,
-      modelB_biasFlag: modelB_biasFlag,
-      modelC_decision: modelC,
-      bias_score: Math.random().toFixed(2),
+**Findings:** The model weights show disproportionate impact on this profile.
+**Correction:** Applying Model C's decision (**${fairDecision}**) which focuses on merit metrics.`;
+    } else {
+      explanation = `**✅ FAIRNESS VERIFIED:**
+FairScale Shield analyzed the application using Model B and found **no significant demographic bias** ($${(biasScore * 100).toFixed(0)}% variance).
+
+**Conclusion:** The decision was driven by neutral indicators. Model A's recommendation is confirmed as fair.`;
+    }
+
+    console.log(`📝 WRITING EXPLANATION: ${explanation.substring(0, 30)}...`);
+
+    await snap.ref.set({
       gemini_explanation: explanation,
+      ai_recommendation: recommendation,
       status: "reviewed",
-      processedAt: new Date()
-    });
+      processedAt: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
 
-    console.log("✅ DONE");
+    console.log("✅ UPDATE SUCCESSFUL");
   });

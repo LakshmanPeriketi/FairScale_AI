@@ -1,9 +1,29 @@
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../models/explanation_model.dart';
 
 /// Explanation Service
 /// Transforms model outputs (bias scores, feature importance, decisions)
 /// into clear, human-readable explanations for the dashboard and Gemini.
 class ExplanationService {
+  
+  static Future<String> getGeminiAnalysis(BiasAnalysis analysis) async {
+    try {
+      final apiKey = dotenv.env['GEMINI_API_KEY'];
+      if (apiKey == null) return "API Key not found.";
+
+      final model = GenerativeModel(model: 'gemini-1.5-flash-latest', apiKey: apiKey);
+      final prompt = generateGeminiPrompt(analysis);
+      
+      final response = await model.generateContent([Content.text(prompt)]);
+      return response.text ?? generateExplanation(analysis).mainExplanation;
+    } catch (e) {
+      print("Gemini API Error: $e");
+      // Fallback to local template on any API error (Key, Model, or Quota)
+      return generateExplanation(analysis).mainExplanation;
+    }
+  }
+
   /// Generate a natural language explanation from bias analysis data
   static ExplanationOutput generateExplanation(BiasAnalysis analysis) {
     final mainExplanation = _generateMainExplanation(analysis);
