@@ -145,10 +145,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  String? _expandedApiId;
+
   Widget _apiCard(String docId, Map<String, dynamic> project) {
+    bool isExpanded = _expandedApiId == docId;
     String rawStatus = project['status'] ?? "Live (Active)";
     
-    // Normalize status for dropdown matching
     String status = "Live (Active)";
     if (rawStatus.contains("Live") || rawStatus == "ACTIVE") status = "Live (Active)";
     else if (rawStatus.contains("Paused") || rawStatus == "NON-ACTIVE") status = "Paused (Dormant)";
@@ -174,30 +176,123 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: GlassCard(
-        padding: const EdgeInsets.all(24),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
-              child: Icon(statusIcon, color: statusColor, size: 28),
-            ),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(project['name'] ?? "Unnamed Project", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-                  const SizedBox(height: 4),
-                  Text(project['key'] ?? "pending...", style: TextStyle(fontFamily: 'monospace', color: Colors.black38, fontSize: 13, letterSpacing: 0.5)),
-                ],
+        padding: EdgeInsets.zero,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () => setState(() => _expandedApiId = isExpanded ? null : docId),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(16)),
+                      child: Icon(statusIcon, color: statusColor, size: 28),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(project['name'] ?? "Unnamed Project", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
+                          const SizedBox(height: 4),
+                          Text(project['key'] ?? "pending...", style: TextStyle(fontFamily: 'monospace', color: Colors.black38, fontSize: 13, letterSpacing: 0.5)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    _statusPicker(docId, status, statusColor),
+                    const SizedBox(width: 12),
+                    Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: Colors.black12),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 20),
-            _statusPicker(docId, status, statusColor),
-          ],
+              if (isExpanded) _buildApiDetails(project),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildApiDetails(Map<String, dynamic> project) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Divider(height: 1),
+          const SizedBox(height: 24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _detailSection(
+                  "PROTECTED ATTRIBUTES", 
+                  project['biasedFeatures'] ?? project['features']?.split(',').take(2).join(', ') ?? "Gender, Race, Age",
+                  Colors.orange,
+                  Icons.warning_amber_rounded
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(
+                child: _detailSection(
+                  "TARGET OUTCOME", 
+                  project['targetColumn'] ?? "Income >50K",
+                  Colors.indigoAccent,
+                  Icons.track_changes
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          _detailSection(
+            "MERIT FEATURES (REMEDIATION)", 
+            project['meritFeatures'] ?? "Occupation, Education, Capital_Gain, Hours_per_week",
+            Colors.green,
+            Icons.verified_user_outlined
+          ),
+          const SizedBox(height: 24),
+          _detailSection(
+            "TRAINING DATASET", 
+            project['dataset'] ?? "Census_Audit_v1.csv (50,000 samples)",
+            Colors.black54,
+            Icons.storage_outlined
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailSection(String title, String value, Color color, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 14, color: color),
+            const SizedBox(width: 8),
+            Text(title, style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.w900, letterSpacing: 1)),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: color.withOpacity(0.1)),
+          ),
+          child: Text(
+            value,
+            style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
     );
   }
 
