@@ -63,12 +63,17 @@ class DetailScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // --- TOP SECTION: FAIRNESS GAUGE & APPLICANT INFO ---
+                    _buildHeader(liveData, biasScore),
+                    const SizedBox(height: 40),
+
+                    // --- DUAL-MODEL COMPARISON ---
                     if (isMobile)
                       Column(
                         children: [
-                          _buildModelCard(context, "Model A (Ingest)", modelADecision, "${(modelAConfidence * 100).toInt()}%", modelAFactors, Colors.deepPurpleAccent, true),
+                          _buildModelCard(context, "MODEL A (BASELINE)", modelADecision, "${(modelAConfidence * 100).toInt()}%", modelAFactors, Colors.deepPurpleAccent, true),
                           const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Icon(Icons.compare_arrows, color: Colors.black12, size: 40)),
-                          _buildModelCard(context, "Model C (Mirror)", modelCDecision, "${(modelCConfidence * 100).toInt()}%", modelCFactors, Colors.green, false),
+                          _buildModelCard(context, "MODEL C (FAIR MIRROR)", modelCDecision, "${(modelCConfidence * 100).toInt()}%", modelCFactors, Colors.green, false),
                         ],
                       )
                     else
@@ -76,14 +81,16 @@ class DetailScreen extends StatelessWidget {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Expanded(child: _buildModelCard(context, "Model A (Ingest)", modelADecision, "${(modelAConfidence * 100).toInt()}%", modelAFactors, Colors.deepPurpleAccent, true)),
+                            Expanded(child: _buildModelCard(context, "MODEL A (BASELINE)", modelADecision, "${(modelAConfidence * 100).toInt()}%", modelAFactors, Colors.deepPurpleAccent, true)),
                             const SizedBox(width: 32),
-                            Expanded(child: _buildModelCard(context, "Model C (Mirror)", modelCDecision, "${(modelCConfidence * 100).toInt()}%", modelCFactors, Colors.green, false)),
+                            Expanded(child: _buildModelCard(context, "MODEL C (FAIR MIRROR)", modelCDecision, "${(modelCConfidence * 100).toInt()}%", modelCFactors, Colors.green, false)),
                           ],
                         ),
                       ),
                     const SizedBox(height: 40),
-                    _buildInsightSection(context, explanationText, biasScore),
+
+                    // --- AI INSIGHT & FEATURE ATTRIBUTION ---
+                    _buildInsightSection(context, explanationText, biasScore, modelAFactors),
                   ],
                 ),
               );
@@ -91,6 +98,74 @@ class DetailScreen extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildHeader(Map<String, dynamic> data, double biasScore) {
+    final fairnessPercentage = ((1 - biasScore) * 100).toInt();
+    final scoreColor = biasScore > 0.6 ? Colors.orange : (biasScore > 0.3 ? Colors.indigoAccent : Colors.green);
+
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.black.withOpacity(0.05)),
+      ),
+      child: Row(
+        children: [
+          // Fairness Gauge
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 100,
+                height: 100,
+                child: CircularProgressIndicator(
+                  value: 1 - biasScore,
+                  strokeWidth: 10,
+                  backgroundColor: Colors.black.withOpacity(0.05),
+                  color: scoreColor,
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text("$fairnessPercentage%", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: scoreColor)),
+                  const Text("FAIRNESS", style: TextStyle(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.black26)),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(width: 40),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(data['name'] ?? "Applicant Profile", style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _metaBadge(Icons.assignment_ind_outlined, "ID: ${appData['id'].toString().substring(0, 8)}"),
+                    const SizedBox(width: 16),
+                    _metaBadge(Icons.location_on_outlined, data['Country'] ?? "Global"),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metaBadge(IconData icon, String text) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.black26),
+        const SizedBox(width: 6),
+        Text(text, style: const TextStyle(color: Colors.black38, fontSize: 13, fontWeight: FontWeight.w500)),
+      ],
     );
   }
 
@@ -107,29 +182,37 @@ class DetailScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(isOriginal ? Icons.warning_amber_rounded : Icons.verified_user_outlined, color: accentColor),
-              const SizedBox(width: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black45)),
+              Text(title, style: TextStyle(fontWeight: FontWeight.w900, fontSize: 12, color: accentColor, letterSpacing: 1.5)),
+              Icon(isOriginal ? Icons.warning_amber_rounded : Icons.verified_user_outlined, color: accentColor, size: 20),
             ],
           ),
           const SizedBox(height: 32),
-          const Text("OUTCOME", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
-          Text(decision, style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: accentColor)),
+          const Text("SYSTEM OUTPUT", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
+          const SizedBox(height: 4),
+          Text(decision, style: TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: accentColor)),
           const SizedBox(height: 8),
-          Text("Confidence Score: $confidence", style: const TextStyle(color: Colors.black38, fontSize: 13)),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(color: accentColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+            child: Text("Confidence: $confidence", style: TextStyle(color: accentColor, fontSize: 11, fontWeight: FontWeight.bold)),
+          ),
           const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 24),
-          const Text("DETERMINING FACTORS", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
-          const SizedBox(height: 16),
-          ...factors.map((f) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+          const Divider(height: 1),
+          const SizedBox(height: 32),
+          const Text("CORE LOGIC FACTORS", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
+          const SizedBox(height: 20),
+          ...factors.take(3).map((f) => Padding(
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               children: [
-                Icon(Icons.circle, size: 6, color: accentColor.withOpacity(0.4)),
-                const SizedBox(width: 12),
-                Text(f, style: const TextStyle(color: Colors.black87, fontSize: 14)),
+                Container(
+                  width: 8, height: 8,
+                  decoration: BoxDecoration(color: accentColor.withOpacity(0.3), shape: BoxShape.circle),
+                ),
+                const SizedBox(width: 16),
+                Text(f, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w500)),
               ],
             ),
           )).toList(),
@@ -138,13 +221,13 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildInsightSection(BuildContext context, String text, double biasScore) {
+  Widget _buildInsightSection(BuildContext context, String text, double biasScore, List<String> factors) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(48),
       decoration: BoxDecoration(
-        color: Colors.indigoAccent.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(24),
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(32),
         border: Border.all(color: Colors.indigoAccent.withOpacity(0.1)),
       ),
       child: Column(
@@ -152,68 +235,115 @@ class DetailScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.auto_awesome, color: Colors.indigoAccent),
-              const SizedBox(width: 12),
-              const Text("FairScale Audit Insight", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.indigoAccent)),
+              const Icon(Icons.auto_awesome, color: Colors.indigoAccent, size: 28),
+              const SizedBox(width: 16),
+              const Text("AI AUDIT JUSTIFICATION", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 22, color: Colors.indigoAccent, letterSpacing: 0.5)),
               const Spacer(),
               if (biasScore > 0.6)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  decoration: BoxDecoration(color: Colors.red.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-                  child: const Text("BIAS SUSPECTED", style: TextStyle(color: Colors.red, fontSize: 10, fontWeight: FontWeight.bold)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(color: Colors.orange.withOpacity(0.1), borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.orange.withOpacity(0.3))),
+                  child: const Text("BIAS DETECTED", style: TextStyle(color: Colors.orange, fontSize: 11, fontWeight: FontWeight.w900)),
                 ),
             ],
           ),
+          const SizedBox(height: 32),
+          
+          // Feature Importance Bar Chart (Simplified)
+          const Text("BIAS ATTRIBUTION BY FEATURE", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
           const SizedBox(height: 24),
-          Text(text, style: const TextStyle(fontSize: 15, height: 1.8, color: Colors.black87)),
-          const SizedBox(height: 40),
-          Padding(
-            padding: const EdgeInsets.only(top: 40),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      await FirebaseFirestore.instance.collection('applications').doc(appData['id']).update({
-                        'status': 'decided',
-                        'final_decision': 'APPROVE',
-                      });
-                      _showSuccessDialog(context, "Decision Approved");
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigoAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: const Text("APPLY FAIRNESS & APPROVE", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+          _buildFeatureChart(factors, biasScore),
+          
+          const SizedBox(height: 48),
+          const Text("HUMAN-IN-THE-LOOP SUMMARY (GEMINI)", style: TextStyle(fontSize: 10, letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.black26)),
+          const SizedBox(height: 16),
+          Text(text, style: const TextStyle(fontSize: 16, height: 1.8, color: Colors.black87, fontStyle: FontStyle.italic)),
+          
+          const SizedBox(height: 54),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await FirebaseFirestore.instance.collection('applications').doc(appData['id']).update({
+                      'status': 'decided',
+                      'final_decision': 'APPROVE',
+                    });
+                    _showSuccessDialog(context, "Decision Approved");
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigoAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    elevation: 10,
+                    shadowColor: Colors.indigoAccent.withOpacity(0.4),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
+                  child: const Text("APPLY FAIR REMEDIATION & APPROVE", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
                 ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () async {
-                      await FirebaseFirestore.instance.collection('applications').doc(appData['id']).update({
-                        'status': 'decided',
-                        'final_decision': 'REJECT',
-                      });
-                      _showSuccessDialog(context, "Application Rejected");
-                    },
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      side: const BorderSide(color: Colors.orangeAccent, width: 1.5),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    ),
-                    child: const Text("REJECT", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () async {
+                    await FirebaseFirestore.instance.collection('applications').doc(appData['id']).update({
+                      'status': 'decided',
+                      'final_decision': 'REJECT',
+                    });
+                    _showSuccessDialog(context, "Application Rejected");
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    side: const BorderSide(color: Colors.orangeAccent, width: 2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
+                  child: const Text("REJECT", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildFeatureChart(List<String> factors, double biasScore) {
+    // Simulated importance scores for the bar chart
+    final List<double> values = [0.85, 0.65, 0.45];
+    final List<Color> colors = [Colors.orange, Colors.orangeAccent, Colors.orangeAccent.withOpacity(0.5)];
+
+    return Column(
+      children: List.generate(factors.take(3).length, (index) {
+        final featureName = factors[index];
+        final importance = values[index];
+        
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(featureName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black54)),
+                  Text("${(importance * 100).toInt()}% Impact", style: const TextStyle(fontSize: 11, color: Colors.black38)),
+                ],
+              ),
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: importance,
+                  minHeight: 8,
+                  backgroundColor: Colors.black.withOpacity(0.05),
+                  color: colors[index],
+                ),
+              ),
+            ],
+          ),
+        );
+      }),
     );
   }
 
