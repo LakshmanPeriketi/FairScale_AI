@@ -70,11 +70,11 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Live Application Feed",
+            "Interception Feed",
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.indigo[900]),
           ),
           const SizedBox(height: 8),
-          const Text("Real-time interception queue awaiting FairScale AI verification.", style: TextStyle(color: Colors.black54)),
+          const Text("Real-time decision queue awaiting FairScale AI verification.", style: TextStyle(color: Colors.black54)),
           const SizedBox(height: 32),
           Expanded(
             child: StreamBuilder<List<Map<String, dynamic>>>(

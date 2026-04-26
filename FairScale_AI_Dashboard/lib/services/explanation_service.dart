@@ -114,19 +114,19 @@ class ExplanationService {
         .join(', ');
 
     return '''
-You are a fairness and bias explanation expert for a lending AI system.
+You are a fairness and bias explanation expert for a Universal Bias Interception and Audit system.
 
 Based on the following model evaluation, generate a brief, non-technical explanation 
-suitable for a bank manager. Keep it under 150 words. Use plain language, no jargon.
+suitable for a decision-maker or organizational auditor. Keep it under 150 words. Use plain language, no jargon.
 
-Applicant: ${analysis.applicantName}
+Subject: ${analysis.applicantName}
 Demographics: Gender: ${analysis.gender ?? 'not provided'}, Race/Ethnicity: ${analysis.race ?? 'not provided'}
 
 Model A (Biased): ${analysis.modelADecision} (${(analysis.modelAConfidence * 100).toStringAsFixed(0)}% confidence)
 - Heavily influenced by: $topFeatures
 
 Model C (Fair): ${analysis.modelCDecision} (${(analysis.modelCConfidence * 100).toStringAsFixed(0)}% confidence)
-- Uses only validated financial metrics
+- Uses only validated merit-based and socio-economic metrics
 
 Bias Risk Level: ${_getRiskLevel(analysis.biasScore)}
 Overall Bias Score: ${(analysis.biasScore * 100).toStringAsFixed(1)}%
@@ -135,7 +135,7 @@ Generate a concise explanation that:
 1. Identifies the bias risk
 2. Explains which feature caused the mismatch
 3. Recommends applying Model C's fair decision
-4. Explains the business/ethical benefit
+4. Explains the organizational/ethical benefit
 
 Do not list detailed metrics. Focus on the "why" and "so what".
 ''';

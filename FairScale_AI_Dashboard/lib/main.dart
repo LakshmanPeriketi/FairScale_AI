@@ -27,7 +27,7 @@ Future<void> main() async {
     ),
   );
   
-  FirebaseFirestore.instance.useFirestoreEmulator('127.0.0.1', 9100);
+  FirebaseFirestore.instance.useFirestoreEmulator('localhost', 9100);
   // Point to the local Auth emulator to prevent 400 Bad Request errors with fake keys
   // await FirebaseAuth.instance.useAuthEmulator('127.0.0.1', 9099); 
   

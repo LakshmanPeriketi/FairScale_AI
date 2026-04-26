@@ -270,7 +270,7 @@ class DetailScreen extends StatelessWidget {
                       'status': 'decided',
                       'final_decision': 'APPROVE',
                     });
-                    _showSuccessDialog(context, "Decision Approved");
+                    _showSuccessDialog(context, "High-Income Tier Authorized");
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.indigoAccent,
@@ -280,7 +280,7 @@ class DetailScreen extends StatelessWidget {
                     shadowColor: Colors.indigoAccent.withOpacity(0.4),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text("APPLY FAIR REMEDIATION & APPROVE", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+                  child: const Text("AUTHORIZE HIGH-INCOME TIER", style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
                 ),
               ),
               const SizedBox(width: 20),
@@ -291,14 +291,14 @@ class DetailScreen extends StatelessWidget {
                       'status': 'decided',
                       'final_decision': 'REJECT',
                     });
-                    _showSuccessDialog(context, "Application Rejected");
+                    _showSuccessDialog(context, "Basic Tier Assigned");
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     side: const BorderSide(color: Colors.orangeAccent, width: 2),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   ),
-                  child: const Text("REJECT", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
+                  child: const Text("ASSIGN BASIC TIER", style: TextStyle(color: Colors.orangeAccent, fontWeight: FontWeight.bold)),
                 ),
               ),
             ],

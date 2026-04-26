@@ -44,7 +44,7 @@ class _DecisionHistoryScreenState extends State<DecisionHistoryScreen> with Sing
                     style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Colors.indigo[900], letterSpacing: -1),
                   ),
                   const SizedBox(height: 4),
-                  const Text("Archives of all processed and remediated applications.", style: TextStyle(color: Colors.black38)),
+                  const Text("Archives of all verified and audited decision instances.", style: TextStyle(color: Colors.black38)),
                 ],
               ),
               const Spacer(),
@@ -75,8 +75,8 @@ class _DecisionHistoryScreenState extends State<DecisionHistoryScreen> with Sing
                   unselectedLabelColor: Colors.black38,
                   labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                   tabs: const [
-                    Tab(text: "ACCEPTED"),
-                    Tab(text: "REJECTED"),
+                    Tab(text: "HIGH-INCOME"),
+                    Tab(text: "BASIC TIER"),
                   ],
                 ),
               ),
@@ -93,7 +93,7 @@ class _DecisionHistoryScreenState extends State<DecisionHistoryScreen> with Sing
                     controller: _searchController,
                     onChanged: (v) => setState(() => _searchQuery = v.toLowerCase()),
                     decoration: const InputDecoration(
-                      hintText: "Search by applicant name...",
+                      hintText: "Search by subject name...",
                       hintStyle: TextStyle(color: Colors.black26, fontSize: 14),
                       prefixIcon: Icon(Icons.search, size: 20, color: Colors.black26),
                       border: InputBorder.none,
@@ -198,7 +198,7 @@ class _DecisionHistoryScreenState extends State<DecisionHistoryScreen> with Sing
               Container(width: 1, height: 16, color: Colors.white24),
               const SizedBox(width: 12),
               Text(
-                "${((approved / (decisions.isEmpty ? 1 : decisions.length)) * 100).toInt()}% APPROVAL",
+                "${((approved / (decisions.isEmpty ? 1 : decisions.length)) * 100).toInt()}% HIGH-INCOME",
                 style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 11),
               ),
             ],
@@ -216,7 +216,7 @@ class _HistoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isApproved = data['final_decision'] == "APPROVE";
-    final color = isApproved ? Colors.green : Colors.redAccent;
+    final color = isApproved ? Colors.green : Colors.orangeAccent;
     
     return Container(
       padding: const EdgeInsets.all(24),
@@ -231,7 +231,7 @@ class _HistoryCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(color: color.withOpacity(0.08), shape: BoxShape.circle),
-            child: Icon(isApproved ? Icons.verified_outlined : Icons.block_flipped, color: color, size: 24),
+            child: Icon(isApproved ? Icons.verified_outlined : Icons.info_outline, color: color, size: 24),
           ),
           const SizedBox(width: 24),
           Expanded(
@@ -242,7 +242,7 @@ class _HistoryCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   children: [
-                    _miniInfo(Icons.attach_money, "\$${data['income'] ?? 'N/A'}"),
+                    _miniInfo(Icons.assignment_ind_outlined, "ID: ${data['id']?.toString().substring(0,6) ?? 'N/A'}"),
                     const SizedBox(width: 16),
                     _miniInfo(Icons.work_outline, data['Occupation'] ?? 'N/A'),
                   ],
@@ -257,7 +257,7 @@ class _HistoryCard extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
                 child: Text(
-                  isApproved ? "SUCCESS" : "DECLINED",
+                  isApproved ? "HIGH-TIER" : "BASIC-TIER",
                   style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 10, letterSpacing: 1),
                 ),
               ),
