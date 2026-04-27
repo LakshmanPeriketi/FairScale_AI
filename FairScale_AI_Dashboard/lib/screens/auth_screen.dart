@@ -68,9 +68,16 @@ class _AuthScreenState extends State<AuthScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-        setState(() => _isLogin = true);
+        
+        // Firebase automatically logs the user in after account creation,
+        // so we move straight to the MFA screen.
+        setState(() {
+          _isLoading = false;
+          _showMFA = true;
+        });
+        
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Enterprise Account Provisioned! Please login."),
+          content: Text("Enterprise Account Provisioned!"),
           backgroundColor: Colors.green,
         ));
       }

@@ -20,14 +20,14 @@ Future<void> main() async {
 
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "fake-api-key",
-      appId: "fake-app-id",
-      messagingSenderId: "fake-sender-id",
-      projectId: "demo-fairscale",
+      apiKey: "AIzaSyBw401Fi1nHZOzNPMxa6Oh1f_s3HqHs7y8",
+      appId: "1:501055239937:web:2fc7993f5c0a9c14cecd00",
+      messagingSenderId: "501055239937",
+      projectId: "fairscaleai",
+      authDomain: "fairscaleai.firebaseapp.com",
+      storageBucket: "fairscaleai.firebasestorage.app",
     ),
   );
-  
-  FirebaseFirestore.instance.useFirestoreEmulator('localhost', 9100);
   // Point to the local Auth emulator to prevent 400 Bad Request errors with fake keys
   // await FirebaseAuth.instance.useAuthEmulator('127.0.0.1', 9099); 
   

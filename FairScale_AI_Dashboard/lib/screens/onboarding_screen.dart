@@ -112,7 +112,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
     }
 
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('http://localhost:5005/train'));
+      // Pointing to the live Render backend instead of localhost
+      var request = http.MultipartRequest('POST', Uri.parse('https://fairscale-ai-ml.onrender.com/train'));
       request.files.add(http.MultipartFile.fromBytes('file', _pickedFile!.bytes!, filename: _pickedFile!.name));
       request.fields['target'] = _selectedTarget!;
       request.fields['protected'] = _selectedProtected.join(',');

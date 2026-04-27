@@ -27,7 +27,7 @@ async function handleAuditRequest(req, res) {
 
     // 🚀 STEP 1: INTERCEPT WITH FAIRSCALE ENGINE
     console.log("🛡️ Sending to FairScale Shield for Audit...");
-    const fairScaleUrl = process.env.FAIRSCALE_ENGINE_URL || 'http://localhost:5005/intercept';
+    const fairScaleUrl = process.env.FAIRSCALE_ENGINE_URL || 'https://fairscale-ai-ml.onrender.com/intercept';
     const apiKey = process.env.FAIRSCALE_API_KEY;
 
     // Simulate Intercept for Demo if ML Engine is not running
