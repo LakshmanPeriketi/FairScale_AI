@@ -132,6 +132,10 @@ def train_models():
         
         # Basic Preprocessing: Drop NaNs and convert categories to numbers
         df = df.dropna().reset_index(drop=True)
+        # OPTIMIZATION: Limit to 1000 rows for instant demo training to prevent UI timeout lag
+        if len(df) > 1000:
+            df = df.sample(n=1000, random_state=42).reset_index(drop=True)
+            
         for col in df.columns:
             if df[col].dtype == 'object':
                 df[col] = pd.factorize(df[col])[0]
@@ -195,4 +199,5 @@ def train_models():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5005)
+    port = int(os.environ.get('PORT', 5005))
+    app.run(debug=False, host='0.0.0.0', port=port)
