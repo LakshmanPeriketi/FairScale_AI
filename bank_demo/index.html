@@ -322,6 +322,7 @@
 
     try {
       // Direct post to backend (Universal Endpoint)
+      console.log("🚀 DEMO: Sending data to Interceptor at http://localhost:4000...");
       const response = await fetch('http://localhost:4000/api/verify-eligibility', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -329,13 +330,16 @@
       });
 
       if (response.ok) {
+        console.log("✅ DEMO: Audit Registered successfully!");
         setTimeout(() => {
           overlay.style.display = 'none';
           success.style.display = 'block';
         }, 2000);
+      } else {
+        console.error("❌ DEMO: Server returned error:", response.status);
       }
     } catch (err) {
-      console.error("Submission error:", err);
+      console.error("❌ DEMO: Submission failed!", err);
       alert("System Offline. Ensure Bank Backend is running.");
       form.style.display = 'block';
       overlay.style.display = 'none';

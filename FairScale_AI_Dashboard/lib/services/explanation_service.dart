@@ -9,8 +9,8 @@ class ExplanationService {
   
   static Future<String> getGeminiAnalysis(BiasAnalysis analysis) async {
     try {
-      final apiKey = dotenv.env['GEMINI_API_KEY'];
-      if (apiKey == null) return "API Key not found.";
+      // Hardcoded for demo to bypass Flutter web asset bundling issues
+      final apiKey = 'AIzaSyB4ljHepiGwmD6hxW6FtwNWHSTxVOtPBC8';
 
       final model = GenerativeModel(model: 'gemini-1.5-flash-latest', apiKey: apiKey);
       final prompt = generateGeminiPrompt(analysis);

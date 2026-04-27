@@ -57,12 +57,19 @@ class _ManagementShellState extends State<ManagementShell> {
         children: [
           _buildBrand(),
           const SizedBox(height: 60),
-          _sidebarItem(0, "Overview", Icons.dashboard_outlined),
-          _sidebarItem(1, "Create Project", Icons.add_circle_outline),
-          _sidebarItem(2, "Interception", Icons.security_outlined),
-          _sidebarItem(3, "Decision History", Icons.history_edu_outlined),
-          _sidebarItem(4, "Manager Profile", Icons.person_outline),
-          const Spacer(),
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _sidebarItem(0, "Overview", Icons.dashboard_outlined),
+                  _sidebarItem(1, "Create Project", Icons.add_circle_outline),
+                  _sidebarItem(2, "Interception", Icons.security_outlined),
+                  _sidebarItem(3, "Decision History", Icons.history_edu_outlined),
+                  _sidebarItem(4, "Manager Profile", Icons.person_outline),
+                ],
+              ),
+            ),
+          ),
           _buildLogout(),
         ],
       ),
